@@ -56,22 +56,29 @@ const PrivateTabs = () => {
       screenOptions={({ route }) => ({
         headerTitle: () => <BrandLogo compact />,
         headerTitleAlign: "left",
-        tabBarActiveTintColor: "#1d4ed8",
-        tabBarInactiveTintColor: "#64748b",
+        tabBarShowLabel: true,
+        tabBarActiveTintColor: "#0b3a8d",
+        tabBarInactiveTintColor: "#334155",
         tabBarLabelStyle: {
           fontWeight: "700",
-          fontSize: 11,
-          marginBottom: 3
+          fontSize: 12,
+          marginBottom: 2
+        },
+        tabBarItemStyle: {
+          paddingVertical: 4
         },
         tabBarStyle: {
-          height: 62,
-          paddingTop: 5,
-          paddingBottom: 6,
-          borderTopColor: "#dbeafe"
+          height: 74,
+          paddingTop: 8,
+          paddingBottom: 10,
+          borderTopColor: "#bfdbfe",
+          borderTopWidth: 1,
+          backgroundColor: "#ffffff",
+          elevation: 12
         },
         tabBarIcon: ({ color, size, focused }) => {
           const icon = tabIconByRoute[route.name] || "ellipse";
-          return <Ionicons name={focused ? icon : `${icon}-outline`} size={size} color={color} />;
+          return <Ionicons name={focused ? icon : `${icon}-outline`} size={size + 1} color={color} />;
         },
         headerShadowVisible: false
       })}

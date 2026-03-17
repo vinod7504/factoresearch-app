@@ -18,6 +18,11 @@
     "web": {},
     "plugins": [
       "expo-asset"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "dd3a70ac-c7f0-450a-9809-46e1f642b923"
+      }
+    }
   }
 }

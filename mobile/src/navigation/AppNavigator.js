@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Platform } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,6 +22,8 @@ import NewsScreen from "../screens/NewsScreen";
 import AdminSuggestionsScreen from "../screens/AdminSuggestionsScreen";
 import SplashScreen from "../screens/SplashScreen";
 import BrandLogo from "../components/BrandLogo";
+import MutualFundCategoriesScreen from "../screens/MutualFundCategoriesScreen";
+import MutualFundCategoryFundsScreen from "../screens/MutualFundCategoryFundsScreen";
 
 const Stack = createNativeStackNavigator();
 const PrivateStack = createNativeStackNavigator();
@@ -57,28 +60,34 @@ const PrivateTabs = () => {
         headerTitle: () => <BrandLogo compact />,
         headerTitleAlign: "left",
         tabBarShowLabel: true,
+        tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: "#0b3a8d",
-        tabBarInactiveTintColor: "#334155",
+        tabBarInactiveTintColor: "#475569",
         tabBarLabelStyle: {
-          fontWeight: "700",
-          fontSize: 12,
-          marginBottom: 2
+          fontWeight: "800",
+          fontSize: 11,
+          lineHeight: 14,
+          marginBottom: Platform.OS === "ios" ? 1 : 2
         },
         tabBarItemStyle: {
-          paddingVertical: 4
+          paddingVertical: 3,
+          marginHorizontal: 3,
+          marginTop: 6,
+          borderRadius: 10
         },
         tabBarStyle: {
-          height: 74,
-          paddingTop: 8,
-          paddingBottom: 10,
+          height: Platform.OS === "ios" ? 88 : 72,
+          paddingTop: 6,
+          paddingBottom: Platform.OS === "ios" ? 22 : 8,
           borderTopColor: "#bfdbfe",
           borderTopWidth: 1,
           backgroundColor: "#ffffff",
-          elevation: 12
+          elevation: 16
         },
+        tabBarActiveBackgroundColor: "#eaf1ff",
         tabBarIcon: ({ color, size, focused }) => {
           const icon = tabIconByRoute[route.name] || "ellipse";
-          return <Ionicons name={focused ? icon : `${icon}-outline`} size={size + 1} color={color} />;
+          return <Ionicons name={focused ? icon : `${icon}-outline`} size={size + 3} color={color} />;
         },
         headerShadowVisible: false
       })}
@@ -115,6 +124,16 @@ const PrivateNavigator = () => {
       />
       <PrivateStack.Screen name="MarketNews" component={NewsScreen} options={{ title: "Market News" }} />
       <PrivateStack.Screen name="Suggestions" component={SuggestionsScreen} options={{ title: "Our Suggestions" }} />
+      <PrivateStack.Screen
+        name="MutualFundCategories"
+        component={MutualFundCategoriesScreen}
+        options={{ title: "Mutual Funds" }}
+      />
+      <PrivateStack.Screen
+        name="MutualFundCategoryFunds"
+        component={MutualFundCategoryFundsScreen}
+        options={({ route }) => ({ title: route.params?.title || "Mutual Funds" })}
+      />
       <PrivateStack.Screen name="ContactUs" component={ContactUsScreen} options={{ title: "Contact Us" }} />
       <PrivateStack.Screen name="AboutUs" component={AboutUsScreen} options={{ title: "About Facto Research" }} />
       <PrivateStack.Screen name="AccountDetails" component={AccountScreen} options={{ title: "My Account" }} />

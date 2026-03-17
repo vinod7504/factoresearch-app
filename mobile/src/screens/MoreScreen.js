@@ -237,6 +237,11 @@ export default function MoreScreen({ navigation }) {
       <ActionButton label="My Profile" icon="person-outline" onPress={() => navigation.navigate("AccountDetails")} />
       <ActionButton label="Market News" icon="newspaper-outline" onPress={() => navigation.navigate("MarketNews")} />
       <ActionButton label="Our Suggestions" icon="bulb-outline" onPress={() => navigation.navigate("Suggestions")} />
+      <ActionButton
+        label="Mutual Funds"
+        icon="pie-chart-outline"
+        onPress={() => navigation.navigate("MutualFundCategories")}
+      />
       <ActionButton label="Contact Us" icon="call-outline" onPress={() => navigation.navigate("ContactUs")} />
       <ActionButton label="About Us" icon="information-circle-outline" onPress={() => navigation.navigate("AboutUs")} />
       {user?.role === "admin" ? (

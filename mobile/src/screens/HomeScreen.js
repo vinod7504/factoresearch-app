@@ -17,6 +17,36 @@ import { AUTO_REFRESH_MS } from "../constants/realtime";
 
 const hasNumber = (value) => typeof value === "number" && !Number.isNaN(value);
 
+const normalizeSymbol = (value) => String(value || "").trim().toUpperCase();
+
+const isIndianQuote = (item) => {
+  const symbol = normalizeSymbol(item?.symbol);
+  const exchange = String(item?.exchange || "").toUpperCase();
+  const currency = String(item?.currency || "").toUpperCase();
+
+  return (
+    symbol.endsWith(".NS") ||
+    symbol.endsWith(".BO") ||
+    exchange.includes("NSE") ||
+    exchange.includes("BSE") ||
+    currency === "INR"
+  );
+};
+
+const splitByMarket = (items = []) => {
+  return items.reduce(
+    (acc, item) => {
+      if (isIndianQuote(item)) {
+        acc.india.push(item);
+      } else {
+        acc.us.push(item);
+      }
+      return acc;
+    },
+    { india: [], us: [] }
+  );
+};
+
 const number = (value, digits = 2) => {
   if (!hasNumber(value)) {
     return "-";
@@ -218,6 +248,21 @@ export default function HomeScreen({ navigation }) {
     [dashboard.currencies]
   );
 
+  const gainersByMarket = useMemo(
+    () => splitByMarket(dashboard.topGainers || []),
+    [dashboard.topGainers]
+  );
+
+  const losersByMarket = useMemo(
+    () => splitByMarket(dashboard.topLosers || []),
+    [dashboard.topLosers]
+  );
+
+  const snapshotByMarket = useMemo(
+    () => splitByMarket(dashboard.stocks || []),
+    [dashboard.stocks]
+  );
+
   useEffect(() => {
     const searchedSymbol = searchResult?.symbol;
 
@@ -403,33 +448,68 @@ export default function HomeScreen({ navigation }) {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Top Gainers</Text>
-        {dashboard.topGainers.length === 0 ? (
+        <Text style={styles.sectionTitle}>Indian Top Gainers</Text>
+        {gainersByMarket.india.length === 0 ? (
           <Text style={styles.emptyText}>No gainers data available.</Text>
         ) : (
-          dashboard.topGainers.map((item) => (
+          gainersByMarket.india.map((item) => (
             <StockRow key={`g-${item.symbol}`} item={item} onPress={openStockDetails} />
           ))
         )}
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Top Losers</Text>
-        {dashboard.topLosers.length === 0 ? (
+        <Text style={styles.sectionTitle}>US Top Gainers</Text>
+        {gainersByMarket.us.length === 0 ? (
+          <Text style={styles.emptyText}>No gainers data available.</Text>
+        ) : (
+          gainersByMarket.us.map((item) => (
+            <StockRow key={`ug-${item.symbol}`} item={item} onPress={openStockDetails} />
+          ))
+        )}
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Indian Top Losers</Text>
+        {losersByMarket.india.length === 0 ? (
           <Text style={styles.emptyText}>No losers data available.</Text>
         ) : (
-          dashboard.topLosers.map((item) => (
+          losersByMarket.india.map((item) => (
             <StockRow key={`l-${item.symbol}`} item={item} onPress={openStockDetails} />
           ))
         )}
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Stock Snapshot</Text>
-        {dashboard.stocks.length === 0 ? (
+        <Text style={styles.sectionTitle}>US Top Losers</Text>
+        {losersByMarket.us.length === 0 ? (
+          <Text style={styles.emptyText}>No losers data available.</Text>
+        ) : (
+          losersByMarket.us.map((item) => (
+            <StockRow key={`ul-${item.symbol}`} item={item} onPress={openStockDetails} />
+          ))
+        )}
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Indian Stock Snapshot</Text>
+        {snapshotByMarket.india.length === 0 ? (
           <Text style={styles.emptyText}>No stock data available.</Text>
         ) : (
-          dashboard.stocks.map((item) => <StockRow key={item.symbol} item={item} onPress={openStockDetails} />)
+          snapshotByMarket.india.map((item) => (
+            <StockRow key={`i-${item.symbol}`} item={item} onPress={openStockDetails} />
+          ))
+        )}
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>US Stock Snapshot</Text>
+        {snapshotByMarket.us.length === 0 ? (
+          <Text style={styles.emptyText}>No stock data available.</Text>
+        ) : (
+          snapshotByMarket.us.map((item) => (
+            <StockRow key={`u-${item.symbol}`} item={item} onPress={openStockDetails} />
+          ))
         )}
       </View>
 

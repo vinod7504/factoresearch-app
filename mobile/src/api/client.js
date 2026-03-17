@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL || "http://localhost:5001/api",
+  baseURL:
+    process.env.EXPO_PUBLIC_API_URL || "https://factoresearch-app.onrender.com/api",
   timeout: 15000
 });
 

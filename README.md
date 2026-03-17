@@ -58,9 +58,43 @@ npm run start
 
 ### Mobile environment
 File: `mobile/.env`
-- `EXPO_PUBLIC_API_URL=http://localhost:5001/api`
+- Live backend (Render): `EXPO_PUBLIC_API_URL=https://factoresearch-app.onrender.com/api`
+- Local backend (optional for development): `EXPO_PUBLIC_API_URL=http://localhost:5001/api`
 
 If you run on a physical device, replace `localhost` with your computer's local IP.
+
+## 3) Build Shareable Android APK (for testers)
+
+This project is configured with Expo EAS to generate an installable `.apk`.
+
+### Local build
+
+```bash
+cd mobile
+npm install
+npx eas-cli login
+npx eas-cli build:configure
+npm run build:apk
+```
+
+After build completion, EAS gives a download URL. Send that URL or the downloaded `.apk` to testers.
+
+### GitHub Actions build
+
+Workflow file added: `.github/workflows/android-apk.yml`
+
+1. Create an Expo token from Expo dashboard (`Account Settings -> Access Tokens`).
+2. In GitHub repo: `Settings -> Secrets and variables -> Actions -> New repository secret`
+3. Add secret:
+   - `EXPO_TOKEN` = your Expo access token
+4. Open GitHub `Actions -> Build Android APK -> Run workflow`
+5. Keep profile as `preview` to generate `.apk`.
+
+The workflow runs EAS build and prints the build URL in Action logs.
+
+### Tester installation note
+
+On Android phones, testers may need to allow install from unknown sources for their browser/file manager before installing the `.apk`.
 
 ## API Endpoints
 

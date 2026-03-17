@@ -1,0 +1,48 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "EAS profile (preview for APK, production for AAB)"
+        required: true
+        default: "preview"
+      wait_for_build:
+        description: "Wait until build completes"
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          token: ${{ secrets.EXPO_TOKEN }}
+          eas-version: latest
+
+      - name: Trigger Android build
+        run: |
+          if [ "${{ inputs.wait_for_build }}" = "true" ]; then
+            eas build --platform android --profile "${{ inputs.profile }}" --non-interactive --wait
+          else
+            eas build --platform android --profile "${{ inputs.profile }}" --non-interactive
+          fi

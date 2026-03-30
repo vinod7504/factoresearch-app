@@ -4,6 +4,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -37,89 +38,172 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      style={styles.container}
-    >
-      <View style={styles.logoWrap}>
-        <BrandLogo />
-      </View>
-      <Text style={styles.title}>Factoresearch Login</Text>
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.wrapper}>
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <View style={styles.heroCard}>
+          <View style={styles.logoWrap}>
+            <BrandLogo />
+          </View>
+          <Text style={styles.heroTitle}>Investor Login</Text>
+          <Text style={styles.heroSubtitle}>Access your dashboard, recommendations, KYC status, and account services from one place.</Text>
+        </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+        <View style={styles.formCard}>
+          <Text style={styles.cardTitle}>Welcome Back</Text>
+          <Text style={styles.cardSubtitle}>Sign in to continue with Facto Research.</Text>
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Login</Text>}
-      </TouchableOpacity>
+          <Text style={styles.label}>Email Address</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="you@example.com"
+            placeholderTextColor="#94a3b8"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          />
 
-      <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
-        <Text style={styles.link}>Forgot password?</Text>
-      </TouchableOpacity>
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter password"
+            placeholderTextColor="#94a3b8"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
 
-      <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-        <Text style={styles.link}>Create new account</Text>
-      </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+            {loading ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.buttonText}>Login</Text>}
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
+            <Text style={styles.link}>Forgot password?</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+            <Text style={styles.linkSecondary}>Create new account</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>Facto Research</Text>
+          <Text style={styles.infoLine}>SEBI Registered Research Analyst: INH000024480</Text>
+          <Text style={styles.infoLine}>Support: support@factoresearch.com</Text>
+          <Text style={styles.infoLine}>Website: www.factoresearch.com</Text>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  wrapper: {
     flex: 1,
-    padding: 20,
-    justifyContent: "center",
-    backgroundColor: "#f3f6fa"
+    backgroundColor: "#eaf2ff"
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: 16,
-    textAlign: "center",
-    color: "#0f172a"
+  container: {
+    flexGrow: 1,
+    justifyContent: "center",
+    padding: 20,
+    paddingVertical: 28
+  },
+  heroCard: {
+    backgroundColor: "#0f3b8f",
+    borderRadius: 24,
+    padding: 22,
+    marginBottom: 16
   },
   logoWrap: {
     alignItems: "center",
+    marginBottom: 16
+  },
+  heroTitle: {
+    fontSize: 28,
+    fontWeight: "800",
+    textAlign: "center",
+    color: "#ffffff"
+  },
+  heroSubtitle: {
+    marginTop: 8,
+    color: "#dbeafe",
+    textAlign: "center",
+    lineHeight: 21,
+    fontSize: 14
+  },
+  formCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#d7e4fb",
+    padding: 18,
     marginBottom: 14
   },
+  cardTitle: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#0f172a"
+  },
+  cardSubtitle: {
+    color: "#64748b",
+    marginTop: 4,
+    marginBottom: 16
+  },
+  label: {
+    color: "#334155",
+    fontSize: 12,
+    fontWeight: "700",
+    marginBottom: 6
+  },
   input: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
+    backgroundColor: "#f8fbff",
+    borderRadius: 14,
     padding: 14,
-    marginBottom: 12,
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: "#dbe3ee"
+    borderColor: "#dbe3ee",
+    color: "#0f172a"
   },
   button: {
-    backgroundColor: "#0f766e",
-    borderRadius: 10,
-    padding: 14,
+    backgroundColor: "#1d4ed8",
+    borderRadius: 14,
+    padding: 15,
     alignItems: "center",
-    marginBottom: 16,
     marginTop: 4
   },
   buttonText: {
-    color: "#fff",
-    fontWeight: "700",
+    color: "#ffffff",
+    fontWeight: "800",
     fontSize: 16
   },
   link: {
     textAlign: "center",
-    color: "#0f766e",
+    color: "#1d4ed8",
+    marginTop: 14,
+    fontWeight: "700"
+  },
+  linkSecondary: {
+    textAlign: "center",
+    color: "#0f172a",
     marginTop: 10,
-    fontWeight: "600"
+    fontWeight: "700"
+  },
+  infoCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#d7e4fb",
+    padding: 16
+  },
+  infoTitle: {
+    color: "#0f172a",
+    fontWeight: "800",
+    fontSize: 16,
+    marginBottom: 8
+  },
+  infoLine: {
+    color: "#475569",
+    lineHeight: 20,
+    fontSize: 13
   }
 });

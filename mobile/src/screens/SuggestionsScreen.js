@@ -119,18 +119,15 @@ export default function SuggestionsScreen({ navigation }) {
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      <Text style={styles.title}>Our Suggestions</Text>
-      <Text style={styles.subtitle}>
-        Manually curated stock suggestions from Factoresearch admin. Auto-refresh every{" "}
-        {Math.round(AUTO_REFRESH_MS / 1000)}s.
-      </Text>
+      <Text style={styles.title}>Recommendations</Text>
+      <Text style={styles.subtitle}>Manually curated stock recommendations from the Facto Research admin desk. Auto-refresh every {Math.round(AUTO_REFRESH_MS / 1000)}s.</Text>
 
       {suggestions.length ? (
         suggestions.map((item) => (
           <SuggestionCard
             key={item.id}
             item={item}
-            onPress={(symbol) => navigation.navigate("StockDetails", { symbol })}
+            onPress={(symbol) => navigation.navigate("RecommendationDetail", { symbol })}
           />
         ))
       ) : (

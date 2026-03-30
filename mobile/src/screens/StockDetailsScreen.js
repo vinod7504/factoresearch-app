@@ -29,34 +29,10 @@ const RANGE_OPTIONS = [
 ];
 
 const BROKER_APPS = [
-  {
-    id: "groww",
-    name: "Groww",
-    symbol: "G",
-    appUrl: (stockSymbol) => `groww://stocks/${stockSymbol}`,
-    webUrl: (stockSymbol) => `https://groww.in/stocks?query=${encodeURIComponent(stockSymbol)}`
-  },
-  {
-    id: "zerodha",
-    name: "Zerodha",
-    symbol: "Z",
-    appUrl: (stockSymbol) => `kite://search/${stockSymbol}`,
-    webUrl: (stockSymbol) => `https://kite.zerodha.com/?q=${encodeURIComponent(stockSymbol)}`
-  },
-  {
-    id: "upstox",
-    name: "Upstox",
-    symbol: "U",
-    appUrl: (stockSymbol) => `upstox://stocks/${stockSymbol}`,
-    webUrl: (stockSymbol) => `https://upstox.com/search?query=${encodeURIComponent(stockSymbol)}`
-  },
-  {
-    id: "angel",
-    name: "Angel One",
-    symbol: "A",
-    appUrl: (stockSymbol) => `angelone://search/${stockSymbol}`,
-    webUrl: (stockSymbol) => `https://www.angelone.in/stocks/${encodeURIComponent(stockSymbol)}`
-  }
+  { id: "groww", name: "Groww", symbol: "G", appUrl: (stockSymbol) => `groww://stocks/${stockSymbol}`, webUrl: (stockSymbol) => `https://groww.in/stocks?query=${encodeURIComponent(stockSymbol)}` },
+  { id: "zerodha", name: "Zerodha", symbol: "Z", appUrl: (stockSymbol) => `kite://search/${stockSymbol}`, webUrl: (stockSymbol) => `https://kite.zerodha.com/?q=${encodeURIComponent(stockSymbol)}` },
+  { id: "upstox", name: "Upstox", symbol: "U", appUrl: (stockSymbol) => `upstox://stocks/${stockSymbol}`, webUrl: (stockSymbol) => `https://upstox.com/search?query=${encodeURIComponent(stockSymbol)}` },
+  { id: "angel", name: "Angel One", symbol: "A", appUrl: (stockSymbol) => `angelone://search/${stockSymbol}`, webUrl: (stockSymbol) => `https://www.angelone.in/stocks/${encodeURIComponent(stockSymbol)}` }
 ];
 
 const hasNumber = (value) => typeof value === "number" && !Number.isNaN(value);
@@ -65,17 +41,13 @@ const formatNumber = (value, digits = 2) => {
   if (!hasNumber(value)) {
     return "-";
   }
-
-  return value.toLocaleString(undefined, {
-    maximumFractionDigits: digits
-  });
+  return value.toLocaleString(undefined, { maximumFractionDigits: digits });
 };
 
 const formatPercent = (value) => {
   if (!hasNumber(value)) {
     return "-";
   }
-
   return `${value.toFixed(2)}%`;
 };
 
@@ -83,7 +55,6 @@ const formatMarketTime = (value) => {
   if (!hasNumber(value)) {
     return "-";
   }
-
   return new Date(value * 1000).toLocaleString();
 };
 
@@ -91,7 +62,6 @@ const getChangeColor = (value) => {
   if (!hasNumber(value)) {
     return "#334155";
   }
-
   return value >= 0 ? "#16a34a" : "#dc2626";
 };
 
@@ -105,34 +75,28 @@ const normaliseRecommendationColor = (recommendation) => {
   return "#2563eb";
 };
 
-const Field = ({ label, value }) => {
-  return (
-    <View style={styles.fieldBox}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      <Text style={styles.fieldValue}>{value}</Text>
-    </View>
-  );
-};
+const Field = ({ label, value }) => (
+  <View style={styles.fieldBox}>
+    <Text style={styles.fieldLabel}>{label}</Text>
+    <Text style={styles.fieldValue}>{value}</Text>
+  </View>
+);
 
-const QuickMetric = ({ label, value }) => {
-  return (
-    <View style={styles.metricPill}>
-      <Text style={styles.metricLabel}>{label}</Text>
-      <Text style={styles.metricValue}>{value}</Text>
-    </View>
-  );
-};
+const QuickMetric = ({ label, value }) => (
+  <View style={styles.metricPill}>
+    <Text style={styles.metricLabel}>{label}</Text>
+    <Text style={styles.metricValue}>{value}</Text>
+  </View>
+);
 
-const BrokerButton = ({ broker, onPress }) => {
-  return (
-    <TouchableOpacity style={styles.brokerButton} onPress={onPress} activeOpacity={0.83}>
-      <View style={styles.brokerMark}>
-        <Text style={styles.brokerMarkText}>{broker.symbol}</Text>
-      </View>
-      <Text style={styles.brokerLabel}>{broker.name}</Text>
-    </TouchableOpacity>
-  );
-};
+const BrokerButton = ({ broker, onPress }) => (
+  <TouchableOpacity style={styles.brokerButton} onPress={onPress} activeOpacity={0.83}>
+    <View style={styles.brokerMark}>
+      <Text style={styles.brokerMarkText}>{broker.symbol}</Text>
+    </View>
+    <Text style={styles.brokerLabel}>{broker.name}</Text>
+  </TouchableOpacity>
+);
 
 const PriceChart = ({ points, isPositive }) => {
   const path = useMemo(() => {
@@ -171,32 +135,12 @@ const PriceChart = ({ points, isPositive }) => {
             <Stop offset="1" stopColor="#101b35" stopOpacity="1" />
           </LinearGradient>
         </Defs>
-
         <Rect x="0" y="0" width={CHART_WIDTH} height={CHART_HEIGHT} fill="url(#chartBg)" rx="12" ry="12" />
-
         {[1, 2, 3, 4].map((step) => {
           const y = (CHART_HEIGHT / 5) * step;
-          return (
-            <Line
-              key={`line-${step}`}
-              x1="0"
-              y1={y}
-              x2={CHART_WIDTH}
-              y2={y}
-              stroke="rgba(148, 163, 184, 0.18)"
-              strokeWidth="1"
-            />
-          );
+          return <Line key={`line-${step}`} x1="0" y1={y} x2={CHART_WIDTH} y2={y} stroke="rgba(148, 163, 184, 0.18)" strokeWidth="1" />;
         })}
-
-        <Polyline
-          points={path}
-          fill="none"
-          stroke={isPositive ? "#38bdf8" : "#f87171"}
-          strokeWidth="2.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+        <Polyline points={path} fill="none" stroke={isPositive ? "#38bdf8" : "#f87171"} strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
       </Svg>
     </View>
   );
@@ -204,7 +148,6 @@ const PriceChart = ({ points, isPositive }) => {
 
 export default function StockDetailsScreen({ route }) {
   const symbol = String(route.params?.symbol || "").toUpperCase();
-
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [watchlistSaving, setWatchlistSaving] = useState(false);
@@ -221,36 +164,20 @@ export default function StockDetailsScreen({ route }) {
         return;
       }
 
-      const requests = [
-        api.get(`/market/quote/${encodeURIComponent(symbol)}`),
-        api.get("/market/watchlist"),
-        api.get("/suggestions")
-      ];
-
+      const requests = [api.get(`/market/quote/${encodeURIComponent(symbol)}`), api.get("/market/watchlist"), api.get("/suggestions")];
       if (withChart) {
-        requests.push(
-          api.get(
-            `/market/chart/${encodeURIComponent(symbol)}?range=${rangeConfig.key}&interval=${rangeConfig.interval}`
-          )
-        );
+        requests.push(api.get(`/market/chart/${encodeURIComponent(symbol)}?range=${rangeConfig.key}&interval=${rangeConfig.interval}`));
       }
 
       const responses = await Promise.all(requests);
+      const watchlist = responses[1].data?.watchlist || [];
+      const allSuggestions = responses[2].data?.suggestions || [];
 
-      const quoteRes = responses[0];
-      const watchlistRes = responses[1];
-      const suggestionsRes = responses[2];
-      const chartRes = withChart ? responses[3] : null;
-
-      const watchlist = watchlistRes.data?.watchlist || [];
-      const allSuggestions = suggestionsRes.data?.suggestions || [];
-
-      setDetail(quoteRes.data.quote);
+      setDetail(responses[0].data.quote);
       setInWatchlist(watchlist.includes(symbol));
       setSuggestions(allSuggestions.filter((item) => item.symbol === symbol));
-
-      if (chartRes) {
-        setChartPoints(chartRes.data?.points || []);
+      if (withChart) {
+        setChartPoints(responses[3].data?.points || []);
       }
     },
     [rangeConfig.interval, rangeConfig.key, symbol]
@@ -275,7 +202,6 @@ export default function StockDetailsScreen({ route }) {
       };
 
       run();
-
       return () => {
         mounted = false;
       };
@@ -286,11 +212,9 @@ export default function StockDetailsScreen({ route }) {
     if (!symbol) {
       return undefined;
     }
-
     const timer = setInterval(() => {
       loadStock({ withChart: true }).catch(() => {});
     }, AUTO_REFRESH_MS);
-
     return () => clearInterval(timer);
   }, [loadStock, symbol]);
 
@@ -310,9 +234,7 @@ export default function StockDetailsScreen({ route }) {
     try {
       setRangeConfig(config);
       setChartLoading(true);
-      const { data } = await api.get(
-        `/market/chart/${encodeURIComponent(symbol)}?range=${config.key}&interval=${config.interval}`
-      );
+      const { data } = await api.get(`/market/chart/${encodeURIComponent(symbol)}?range=${config.key}&interval=${config.interval}`);
       setChartPoints(data.points || []);
     } catch (error) {
       const message = error?.response?.data?.message || "Unable to load selected chart range";
@@ -325,13 +247,11 @@ export default function StockDetailsScreen({ route }) {
   const toggleWatchlist = async () => {
     try {
       setWatchlistSaving(true);
-
       if (inWatchlist) {
         await api.delete(`/market/watchlist/${encodeURIComponent(symbol)}`);
       } else {
         await api.post("/market/watchlist", { symbol });
       }
-
       await loadStock({ withChart: false });
     } catch (error) {
       const message = error?.response?.data?.message || "Unable to update watchlist";
@@ -345,13 +265,11 @@ export default function StockDetailsScreen({ route }) {
     try {
       const appUrl = broker.appUrl(symbol);
       const webUrl = broker.webUrl(symbol);
-
       const canOpenApp = await Linking.canOpenURL(appUrl);
       if (canOpenApp) {
         await Linking.openURL(appUrl);
         return;
       }
-
       await Linking.openURL(webUrl);
     } catch (_error) {
       Alert.alert("Unable to open", `Could not open ${broker.name}.`);
@@ -362,34 +280,25 @@ export default function StockDetailsScreen({ route }) {
     if (!chartPoints.length) {
       return null;
     }
-
     const prices = chartPoints.map((item) => item.price);
-    const start = chartPoints[0]?.price;
-    const end = chartPoints[chartPoints.length - 1]?.price;
-
     return {
       low: Math.min(...prices),
       high: Math.max(...prices),
-      start,
-      end
+      start: chartPoints[0]?.price,
+      end: chartPoints[chartPoints.length - 1]?.price
     };
   }, [chartPoints]);
 
   const marketDepth = useMemo(() => {
     const buyPrice = hasNumber(detail?.bid) ? detail.bid : null;
-    const buyQty = hasNumber(detail?.bidSize) ? detail.bidSize : null;
     const sellPrice = hasNumber(detail?.ask) ? detail.ask : null;
-    const sellQty = hasNumber(detail?.askSize) ? detail.askSize : null;
-    const spread = hasNumber(buyPrice) && hasNumber(sellPrice) ? sellPrice - buyPrice : null;
-    const midPrice = hasNumber(buyPrice) && hasNumber(sellPrice) ? (buyPrice + sellPrice) / 2 : null;
-
     return {
       buyPrice,
-      buyQty,
+      buyQty: hasNumber(detail?.bidSize) ? detail.bidSize : null,
       sellPrice,
-      sellQty,
-      spread,
-      midPrice,
+      sellQty: hasNumber(detail?.askSize) ? detail.askSize : null,
+      spread: hasNumber(buyPrice) && hasNumber(sellPrice) ? sellPrice - buyPrice : null,
+      midPrice: hasNumber(buyPrice) && hasNumber(sellPrice) ? (buyPrice + sellPrice) / 2 : null,
       available: hasNumber(buyPrice) || hasNumber(sellPrice)
     };
   }, [detail]);
@@ -411,18 +320,13 @@ export default function StockDetailsScreen({ route }) {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
       <View style={styles.headerCard}>
         <Text style={styles.company}>{detail.name || detail.symbol}</Text>
         <Text style={styles.symbolLine}>
           {detail.symbol || "-"}
-          {detail.exchange ? ` • ${detail.exchange}` : ""}
+          {detail.exchange ? ` | ${detail.exchange}` : ""}
         </Text>
-
         <View style={styles.priceRow}>
           <Text style={styles.price}>
             {formatNumber(detail.price)} {detail.currency || ""}
@@ -431,22 +335,10 @@ export default function StockDetailsScreen({ route }) {
             {formatNumber(detail.change)} ({formatPercent(detail.changePercent)})
           </Text>
         </View>
-
-        <Text style={styles.metaText}>
-          Last update: {formatMarketTime(detail.marketTime)} • Auto-refresh {Math.round(AUTO_REFRESH_MS / 1000)}s
-        </Text>
-
+        <Text style={styles.metaText}>Last update: {formatMarketTime(detail.marketTime)} | Auto-refresh {Math.round(AUTO_REFRESH_MS / 1000)}s</Text>
         <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={[styles.watchlistButton, inWatchlist ? styles.removeBtn : styles.addBtn]}
-            onPress={toggleWatchlist}
-            disabled={watchlistSaving}
-          >
-            {watchlistSaving ? (
-              <ActivityIndicator color="#ffffff" />
-            ) : (
-              <Text style={styles.watchlistText}>{inWatchlist ? "Remove Watchlist" : "Add Watchlist"}</Text>
-            )}
+          <TouchableOpacity style={[styles.watchlistButton, inWatchlist ? styles.removeBtn : styles.addBtn]} onPress={toggleWatchlist} disabled={watchlistSaving}>
+            {watchlistSaving ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.watchlistText}>{inWatchlist ? "Remove Watchlist" : "Add Watchlist"}</Text>}
           </TouchableOpacity>
         </View>
       </View>
@@ -467,7 +359,6 @@ export default function StockDetailsScreen({ route }) {
         ) : (
           <PriceChart points={chartPoints} isPositive={(detail.changePercent || 0) >= 0} />
         )}
-
         {chartStats ? (
           <View style={styles.chartStatsRow}>
             <QuickMetric label="Range Low" value={formatNumber(chartStats.low)} />
@@ -476,20 +367,28 @@ export default function StockDetailsScreen({ route }) {
             <QuickMetric label="End" value={formatNumber(chartStats.end)} />
           </View>
         ) : null}
-
         <View style={styles.rangeRow}>
           {RANGE_OPTIONS.map((item) => (
-            <TouchableOpacity
-              key={item.key}
-              style={[styles.rangeChip, rangeConfig.key === item.key ? styles.rangeChipActive : null]}
-              onPress={() => onChangeRange(item)}
-            >
-              <Text style={[styles.rangeText, rangeConfig.key === item.key ? styles.rangeTextActive : null]}>
-                {item.label}
-              </Text>
+            <TouchableOpacity key={item.key} style={[styles.rangeChip, rangeConfig.key === item.key ? styles.rangeChipActive : null]} onPress={() => onChangeRange(item)}>
+              <Text style={[styles.rangeText, rangeConfig.key === item.key ? styles.rangeTextActive : null]}>{item.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
+      </View>
+
+      <View style={styles.suggestionCard}>
+        <Text style={styles.sectionTitle}>Recommendation Detail</Text>
+        {suggestions.length ? (
+          suggestions.map((item) => (
+            <View key={item.id} style={styles.suggestionRow}>
+              <Text style={[styles.suggestionBadge, { color: normaliseRecommendationColor(item.recommendation) }]}>{item.recommendation}</Text>
+              <Text style={styles.suggestionNote}>{item.note}</Text>
+              <Text style={styles.suggestionMeta}>Target: {item.targetPrice ?? "-"} | Stop Loss: {item.stopLoss ?? "-"}</Text>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.emptyText}>No active admin recommendation is attached to this symbol right now. Market data is still available below.</Text>
+        )}
       </View>
 
       <View style={styles.buyCard}>
@@ -519,7 +418,6 @@ export default function StockDetailsScreen({ route }) {
               <Text style={[styles.depthCell, styles.depthSell]}>{formatNumber(marketDepth.sellPrice)}</Text>
               <Text style={styles.depthCell}>{formatNumber(marketDepth.sellQty, 0)}</Text>
             </View>
-
             <View style={styles.depthStatsRow}>
               <QuickMetric label="Spread" value={formatNumber(marketDepth.spread)} />
               <QuickMetric label="Mid Price" value={formatNumber(marketDepth.midPrice)} />
@@ -529,23 +427,6 @@ export default function StockDetailsScreen({ route }) {
           <Text style={styles.emptyText}>Bid/Ask depth currently unavailable for this symbol.</Text>
         )}
       </View>
-
-      {suggestions.length ? (
-        <View style={styles.suggestionCard}>
-          <Text style={styles.sectionTitle}>Our Suggestion</Text>
-          {suggestions.map((item) => (
-            <View key={item.id} style={styles.suggestionRow}>
-              <Text style={[styles.suggestionBadge, { color: normaliseRecommendationColor(item.recommendation) }]}>
-                {item.recommendation}
-              </Text>
-              <Text style={styles.suggestionNote}>{item.note}</Text>
-              <Text style={styles.suggestionMeta}>
-                Target: {item.targetPrice ?? "-"} | Stop Loss: {item.stopLoss ?? "-"}
-              </Text>
-            </View>
-          ))}
-        </View>
-      ) : null}
 
       <View style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>Performance</Text>
@@ -593,322 +474,61 @@ export default function StockDetailsScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#edf3ff"
-  },
-  content: {
-    padding: 12,
-    paddingBottom: 28
-  },
-  loader: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  headerCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#d8e5ff",
-    padding: 12,
-    marginBottom: 10
-  },
-  company: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#1e293b"
-  },
-  symbolLine: {
-    marginTop: 3,
-    color: "#475569",
-    fontWeight: "700"
-  },
-  priceRow: {
-    marginTop: 8,
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    gap: 10
-  },
-  price: {
-    fontSize: 32,
-    fontWeight: "800",
-    color: "#0f172a"
-  },
-  change: {
-    fontSize: 14,
-    fontWeight: "800"
-  },
-  metaText: {
-    marginTop: 6,
-    color: "#64748b",
-    fontSize: 12,
-    fontWeight: "600"
-  },
-  headerActions: {
-    marginTop: 10,
-    flexDirection: "row",
-    justifyContent: "flex-end"
-  },
-  watchlistButton: {
-    borderRadius: 999,
-    paddingVertical: 10,
-    paddingHorizontal: 14
-  },
-  addBtn: {
-    backgroundColor: "#1d4ed8"
-  },
-  removeBtn: {
-    backgroundColor: "#dc2626"
-  },
-  watchlistText: {
-    color: "#ffffff",
-    fontWeight: "800"
-  },
-  metricRowWrap: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    gap: 8,
-    marginBottom: 10
-  },
-  metricPill: {
-    width: "48%",
-    borderRadius: 11,
-    borderWidth: 1,
-    borderColor: "#d8e5ff",
-    backgroundColor: "#ffffff",
-    padding: 9
-  },
-  metricLabel: {
-    color: "#64748b",
-    fontSize: 11,
-    fontWeight: "700"
-  },
-  metricValue: {
-    marginTop: 3,
-    color: "#0f172a",
-    fontWeight: "800"
-  },
-  chartCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#d8e5ff",
-    padding: 12,
-    marginBottom: 10
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: "#0f172a",
-    marginBottom: 8
-  },
-  chartWrap: {
-    borderRadius: 12,
-    overflow: "hidden"
-  },
-  chartLoader: {
-    height: CHART_HEIGHT,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 12,
-    backgroundColor: "#f8fafc"
-  },
-  emptyChart: {
-    height: CHART_HEIGHT,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 12,
-    backgroundColor: "#f8fafc"
-  },
-  emptyChartText: {
-    color: "#64748b"
-  },
-  chartStatsRow: {
-    marginTop: 10,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    gap: 8
-  },
-  rangeRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 10
-  },
-  rangeChip: {
-    backgroundColor: "#f8fafc",
-    borderColor: "#dbe3ee",
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingVertical: 6,
-    paddingHorizontal: 12
-  },
-  rangeChipActive: {
-    backgroundColor: "#1d4ed8",
-    borderColor: "#1d4ed8"
-  },
-  rangeText: {
-    color: "#334155",
-    fontWeight: "700",
-    fontSize: 12
-  },
-  rangeTextActive: {
-    color: "#ffffff"
-  },
-  buyCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#d8e5ff",
-    padding: 12,
-    marginBottom: 10
-  },
-  subtext: {
-    color: "#64748b",
-    marginBottom: 8
-  },
-  depthNote: {
-    color: "#64748b",
-    marginBottom: 8,
-    fontSize: 12
-  },
-  depthHeaderRow: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
-    paddingBottom: 6,
-    marginBottom: 6
-  },
-  depthHeaderCell: {
-    flex: 1,
-    color: "#64748b",
-    fontSize: 11,
-    fontWeight: "700",
-    textAlign: "center"
-  },
-  depthRow: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
-    paddingBottom: 8,
-    marginBottom: 8
-  },
-  depthCell: {
-    flex: 1,
-    color: "#0f172a",
-    fontSize: 13,
-    fontWeight: "700",
-    textAlign: "center"
-  },
-  depthBuy: {
-    color: "#16a34a"
-  },
-  depthSell: {
-    color: "#dc2626"
-  },
-  depthStatsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    gap: 8
-  },
-  emptyText: {
-    color: "#64748b"
-  },
-  brokersGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8
-  },
-  brokerButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f8fafc",
-    borderWidth: 1,
-    borderColor: "#dbe3ee",
-    borderRadius: 10,
-    paddingVertical: 9,
-    paddingHorizontal: 10,
-    gap: 8
-  },
-  brokerMark: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    backgroundColor: "#1d4ed8",
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  brokerMarkText: {
-    color: "#ffffff",
-    fontWeight: "800",
-    fontSize: 12
-  },
-  brokerLabel: {
-    fontWeight: "700",
-    color: "#0f172a"
-  },
-  suggestionCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#d8e5ff",
-    padding: 12,
-    marginBottom: 10
-  },
-  suggestionRow: {
-    borderColor: "#e2e8f0",
-    borderBottomWidth: 1,
-    paddingBottom: 10,
-    marginBottom: 10
-  },
-  suggestionBadge: {
-    fontWeight: "800",
-    marginBottom: 4
-  },
-  suggestionNote: {
-    color: "#334155",
-    lineHeight: 20
-  },
-  suggestionMeta: {
-    color: "#64748b",
-    marginTop: 6,
-    fontSize: 12
-  },
-  sectionCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#d8e5ff",
-    padding: 12,
-    marginBottom: 10
-  },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    gap: 8
-  },
-  fieldBox: {
-    width: "48%",
-    borderWidth: 1,
-    borderColor: "#dce6f8",
-    borderRadius: 10,
-    padding: 9,
-    backgroundColor: "#f9fbff"
-  },
-  fieldLabel: {
-    color: "#64748b",
-    fontSize: 11,
-    marginBottom: 2,
-    fontWeight: "700"
-  },
-  fieldValue: {
-    color: "#0f172a",
-    fontWeight: "800"
-  }
+  container: { flex: 1, backgroundColor: "#edf3ff" },
+  content: { padding: 12, paddingBottom: 28 },
+  loader: { flex: 1, justifyContent: "center", alignItems: "center" },
+  headerCard: { backgroundColor: "#ffffff", borderRadius: 14, borderWidth: 1, borderColor: "#d8e5ff", padding: 12, marginBottom: 10 },
+  company: { fontSize: 22, fontWeight: "800", color: "#1e293b" },
+  symbolLine: { marginTop: 3, color: "#475569", fontWeight: "700" },
+  priceRow: { marginTop: 8, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: 10 },
+  price: { fontSize: 32, fontWeight: "800", color: "#0f172a" },
+  change: { fontSize: 14, fontWeight: "800" },
+  metaText: { marginTop: 6, color: "#64748b", fontSize: 12, fontWeight: "600" },
+  headerActions: { marginTop: 10, flexDirection: "row", justifyContent: "flex-end" },
+  watchlistButton: { borderRadius: 999, paddingVertical: 10, paddingHorizontal: 14 },
+  addBtn: { backgroundColor: "#1d4ed8" },
+  removeBtn: { backgroundColor: "#dc2626" },
+  watchlistText: { color: "#ffffff", fontWeight: "800" },
+  metricRowWrap: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 8, marginBottom: 10 },
+  metricPill: { width: "48%", borderRadius: 11, borderWidth: 1, borderColor: "#d8e5ff", backgroundColor: "#ffffff", padding: 9 },
+  metricLabel: { color: "#64748b", fontSize: 11, fontWeight: "700" },
+  metricValue: { marginTop: 3, color: "#0f172a", fontWeight: "800" },
+  chartCard: { backgroundColor: "#ffffff", borderRadius: 14, borderWidth: 1, borderColor: "#d8e5ff", padding: 12, marginBottom: 10 },
+  sectionTitle: { fontSize: 18, fontWeight: "800", color: "#0f172a", marginBottom: 8 },
+  chartWrap: { borderRadius: 12, overflow: "hidden" },
+  chartLoader: { height: CHART_HEIGHT, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: "#f8fafc" },
+  emptyChart: { height: CHART_HEIGHT, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: "#f8fafc" },
+  emptyChartText: { color: "#64748b" },
+  chartStatsRow: { marginTop: 10, flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 8 },
+  rangeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+  rangeChip: { backgroundColor: "#f8fafc", borderColor: "#dbe3ee", borderWidth: 1, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 12 },
+  rangeChipActive: { backgroundColor: "#1d4ed8", borderColor: "#1d4ed8" },
+  rangeText: { color: "#334155", fontWeight: "700", fontSize: 12 },
+  rangeTextActive: { color: "#ffffff" },
+  buyCard: { backgroundColor: "#ffffff", borderRadius: 14, borderWidth: 1, borderColor: "#d8e5ff", padding: 12, marginBottom: 10 },
+  subtext: { color: "#64748b", marginBottom: 8 },
+  depthNote: { color: "#64748b", marginBottom: 8, fontSize: 12 },
+  depthHeaderRow: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: "#e2e8f0", paddingBottom: 6, marginBottom: 6 },
+  depthHeaderCell: { flex: 1, color: "#64748b", fontSize: 11, fontWeight: "700", textAlign: "center" },
+  depthRow: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: "#e2e8f0", paddingBottom: 8, marginBottom: 8 },
+  depthCell: { flex: 1, color: "#0f172a", fontSize: 13, fontWeight: "700", textAlign: "center" },
+  depthBuy: { color: "#16a34a" },
+  depthSell: { color: "#dc2626" },
+  depthStatsRow: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 8 },
+  emptyText: { color: "#64748b" },
+  brokersGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  brokerButton: { flexDirection: "row", alignItems: "center", backgroundColor: "#f8fafc", borderWidth: 1, borderColor: "#dbe3ee", borderRadius: 10, paddingVertical: 9, paddingHorizontal: 10, gap: 8 },
+  brokerMark: { width: 24, height: 24, borderRadius: 6, backgroundColor: "#1d4ed8", alignItems: "center", justifyContent: "center" },
+  brokerMarkText: { color: "#ffffff", fontWeight: "800", fontSize: 12 },
+  brokerLabel: { fontWeight: "700", color: "#0f172a" },
+  suggestionCard: { backgroundColor: "#ffffff", borderRadius: 14, borderWidth: 1, borderColor: "#d8e5ff", padding: 12, marginBottom: 10 },
+  suggestionRow: { borderColor: "#e2e8f0", borderBottomWidth: 1, paddingBottom: 10, marginBottom: 10 },
+  suggestionBadge: { fontWeight: "800", marginBottom: 4 },
+  suggestionNote: { color: "#334155", lineHeight: 20 },
+  suggestionMeta: { color: "#64748b", marginTop: 6, fontSize: 12 },
+  sectionCard: { backgroundColor: "#ffffff", borderRadius: 14, borderWidth: 1, borderColor: "#d8e5ff", padding: 12, marginBottom: 10 },
+  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 8 },
+  fieldBox: { width: "48%", borderWidth: 1, borderColor: "#dce6f8", borderRadius: 10, padding: 9, backgroundColor: "#f9fbff" },
+  fieldLabel: { color: "#64748b", fontSize: 11, marginBottom: 2, fontWeight: "700" },
+  fieldValue: { color: "#0f172a", fontWeight: "800" }
 });

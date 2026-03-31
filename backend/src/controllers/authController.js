@@ -22,6 +22,7 @@ const toPublicUser = (user) => ({
   email: user.email,
   phone: user.phone,
   role: user.role || "user",
+  kycStatus: user?.kyc?.status || "Pending",
   watchlist: Array.isArray(user.watchlist) ? user.watchlist : [],
   createdAt: user.createdAt,
   updatedAt: user.updatedAt,
@@ -212,11 +213,45 @@ const getMe = async (req, res) => {
   }
 };
 
+const registerPushToken = async (req, res) => {
+  try {
+    const pushToken = String(req.body?.pushToken || "").trim();
+
+    if (!pushToken) {
+      return res.status(400).json({ message: "pushToken is required" });
+    }
+
+    if (!/^(ExponentPushToken|ExpoPushToken)\[.+\]$/.test(pushToken)) {
+      return res.status(400).json({ message: "Invalid Expo push token format" });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const nextTokens = Array.isArray(user.pushTokens) ? [...user.pushTokens] : [];
+    if (!nextTokens.includes(pushToken)) {
+      nextTokens.unshift(pushToken);
+      user.pushTokens = nextTokens.slice(0, 8);
+      await user.save();
+    }
+
+    return res.json({
+      message: "Push token registered",
+      tokenCount: Array.isArray(user.pushTokens) ? user.pushTokens.length : 0
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to register push token" });
+  }
+};
+
 module.exports = {
   register,
   login,
   forgotPassword,
   verifyOtp,
   resetPassword,
-  getMe
+  getMe,
+  registerPushToken
 };

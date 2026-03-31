@@ -7,6 +7,7 @@ const authRoutes = require("./routes/authRoutes");
 const marketRoutes = require("./routes/marketRoutes");
 const suggestionRoutes = require("./routes/suggestionRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const kycRoutes = require("./routes/kycRoutes");
 const ensureAdmin = require("./utils/ensureAdmin");
 
 dotenv.config();
@@ -17,7 +18,12 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  handler: (_req, res) => {
+    return res.status(429).json({
+      message: "Too many requests, please wait a minute and try again."
+    });
+  }
 });
 
 app.use(cors());
@@ -32,6 +38,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/market", marketRoutes);
 app.use("/api/suggestions", suggestionRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/kyc", kycRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error("Unhandled error:", err);

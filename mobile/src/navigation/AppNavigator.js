@@ -23,6 +23,7 @@ import NewsScreen from "../screens/NewsScreen";
 import AdminSuggestionsScreen from "../screens/AdminSuggestionsScreen";
 import SplashScreen from "../screens/SplashScreen";
 import BrandLogo from "../components/BrandLogo";
+import HeaderBrandSearch from "../components/HeaderBrandSearch";
 import MutualFundCategoriesScreen from "../screens/MutualFundCategoriesScreen";
 import MutualFundCategoryFundsScreen from "../screens/MutualFundCategoryFundsScreen";
 import KycProfileScreen from "../screens/KycProfileScreen";
@@ -95,7 +96,20 @@ const PrivateTabs = () => (
       headerShadowVisible: false
     })}
   >
-    <Tab.Screen name="HomeTab" component={HomeScreen} options={{ title: "Dashboard", tabBarLabel: "Dashboard" }} />
+    <Tab.Screen
+      name="HomeTab"
+      component={HomeScreen}
+      options={({ navigation }) => ({
+        title: "Dashboard",
+        tabBarLabel: "Dashboard",
+        headerTitle: () => <HeaderBrandSearch navigation={navigation} />,
+        headerTitleAlign: "left",
+        headerTitleContainerStyle: {
+          left: 12,
+          right: 12
+        }
+      })}
+    />
     <Tab.Screen
       name="RecommendationsTab"
       component={SuggestionsScreen}

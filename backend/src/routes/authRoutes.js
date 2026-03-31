@@ -5,7 +5,8 @@ const {
   forgotPassword,
   verifyOtp,
   resetPassword,
-  getMe
+  getMe,
+  registerPushToken
 } = require("../controllers/authController");
 const auth = require("../middleware/auth");
 
@@ -17,5 +18,6 @@ router.post("/forgot-password", forgotPassword);
 router.post("/verify-otp", verifyOtp);
 router.post("/reset-password", resetPassword);
 router.get("/me", auth, getMe);
+router.post("/push-token", auth, registerPushToken);
 
 module.exports = router;

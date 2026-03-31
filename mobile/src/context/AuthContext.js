@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api, { setAuthHeader } from "../api/client";
+import { getDevicePushToken } from "../utils/pushNotifications";
 
 const AuthContext = createContext(null);
 
@@ -89,6 +90,34 @@ export const AuthProvider = ({ children }) => {
 
     bootstrap();
   }, []);
+
+  useEffect(() => {
+    if (!token || !user?.id) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const syncPushToken = async () => {
+      try {
+        const pushToken = await getDevicePushToken();
+
+        if (!pushToken || cancelled) {
+          return;
+        }
+
+        await api.post("/auth/push-token", { pushToken });
+      } catch (_error) {
+        // Intentionally ignored to avoid blocking auth flow.
+      }
+    };
+
+    syncPushToken();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, user?.id]);
 
   const value = useMemo(
     () => ({

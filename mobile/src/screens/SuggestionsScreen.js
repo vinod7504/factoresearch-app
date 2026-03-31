@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import api from "../api/client";
-import { AUTO_REFRESH_MS } from "../constants/realtime";
+import { startContinuousRefresh } from "../constants/realtime";
 
 const recommendationColor = (value) => {
   if (value === "BUY") {
@@ -86,11 +86,11 @@ export default function SuggestionsScreen({ navigation }) {
   );
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      loadSuggestions().catch(() => {});
-    }, AUTO_REFRESH_MS);
+    const stop = startContinuousRefresh(async () => {
+      await loadSuggestions();
+    });
 
-    return () => clearInterval(timer);
+    return stop;
   }, [loadSuggestions]);
 
   const onRefresh = async () => {
@@ -120,7 +120,7 @@ export default function SuggestionsScreen({ navigation }) {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <Text style={styles.title}>Recommendations</Text>
-      <Text style={styles.subtitle}>Manually curated stock recommendations from the Facto Research admin desk. Auto-refresh every {Math.round(AUTO_REFRESH_MS / 1000)}s.</Text>
+      <Text style={styles.subtitle}>Manually curated stock recommendations from the Facto Research admin desk with live continuous refresh.</Text>
 
       {suggestions.length ? (
         suggestions.map((item) => (

@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import api from "../api/client";
-import { AUTO_REFRESH_MS } from "../constants/realtime";
+import { startContinuousRefresh } from "../constants/realtime";
 import { useAppData } from "../context/AppDataContext";
 
 const number = (value) => {
@@ -101,11 +101,11 @@ export default function WatchlistScreen({ navigation }) {
   );
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      loadWatchlist().catch(() => {});
-    }, AUTO_REFRESH_MS);
+    const stop = startContinuousRefresh(async () => {
+      await loadWatchlist();
+    });
 
-    return () => clearInterval(timer);
+    return stop;
   }, [loadWatchlist]);
 
   const onRefresh = async () => {
@@ -166,7 +166,7 @@ export default function WatchlistScreen({ navigation }) {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <Text style={styles.title}>Watchlist / Portfolio</Text>
-      <Text style={styles.subtitle}>Track your watchlist and maintain a simple portfolio register. Auto-refresh every {Math.round(AUTO_REFRESH_MS / 1000)}s.</Text>
+      <Text style={styles.subtitle}>Track your watchlist and maintain a simple portfolio register with live continuous refresh.</Text>
 
       <View style={styles.addCard}>
         <TextInput

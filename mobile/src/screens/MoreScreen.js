@@ -14,7 +14,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import api from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { useAppData } from "../context/AppDataContext";
-import { RATES_REFRESH_MS } from "../constants/realtime";
+import { startContinuousRefresh } from "../constants/realtime";
 
 const hasNumber = (value) => typeof value === "number" && !Number.isNaN(value);
 
@@ -93,11 +93,11 @@ export default function MoreScreen({ navigation }) {
   );
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      loadRates().catch(() => {});
-    }, RATES_REFRESH_MS);
+    const stop = startContinuousRefresh(async () => {
+      await loadRates();
+    });
 
-    return () => clearInterval(timer);
+    return stop;
   }, [loadRates]);
 
   const onRefresh = async () => {
@@ -116,6 +116,13 @@ export default function MoreScreen({ navigation }) {
     const matched = metalRates?.cities?.find((item) => item.city === selectedCity);
     return matched || metalRates?.cities?.[0] || null;
   }, [metalRates, selectedCity]);
+
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to log out?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Logout", style: "destructive", onPress: logout }
+    ]);
+  };
 
   return (
     <ScrollView
@@ -214,7 +221,7 @@ export default function MoreScreen({ navigation }) {
       <ActionButton label="EMI Calculator" icon="cash-outline" onPress={() => navigation.navigate("EmiCalculator")} />
       <ActionButton label="Mutual Fund Calculator" icon="calculator-outline" onPress={() => navigation.navigate("MutualFundCalculator")} />
       {user?.role === "admin" ? <ActionButton label="Admin Panel" icon="shield-checkmark-outline" onPress={() => navigation.navigate("AdminSuggestions")} /> : null}
-      <ActionButton label="Logout" icon="log-out-outline" onPress={logout} danger />
+      <ActionButton label="Logout" icon="log-out-outline" onPress={handleLogout} danger />
     </ScrollView>
   );
 }

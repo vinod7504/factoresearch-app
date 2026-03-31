@@ -42,9 +42,10 @@ const createDefaultState = (user) => ({
     occupation: "Salaried",
     investorType: "Retail Investor",
     nominee: "",
-    kycStatus: "Pending",
+    kycStatus: user?.kycStatus || "Pending",
     kycRedirected: false,
-    kycUpdatedAt: null
+    kycUpdatedAt: null,
+    kycReviewNote: ""
   },
   riskProfile: {
     level: "Not assessed",
@@ -94,7 +95,8 @@ const mergeWithDefaults = (user, saved) => {
       ...(saved?.profile || {}),
       fullName: saved?.profile?.fullName || user?.username || defaults.profile.fullName,
       email: user?.email || saved?.profile?.email || defaults.profile.email,
-      phone: user?.phone || saved?.profile?.phone || defaults.profile.phone
+      phone: user?.phone || saved?.profile?.phone || defaults.profile.phone,
+      kycStatus: saved?.profile?.kycStatus || user?.kycStatus || defaults.profile.kycStatus
     },
     riskProfile: {
       ...defaults.riskProfile,
@@ -169,6 +171,20 @@ export const AppDataProvider = ({ children }) => {
       mounted = false;
     };
   }, [storageKey, user]);
+
+  useEffect(() => {
+    if (!user?.kycStatus) {
+      return;
+    }
+
+    setState((prev) => ({
+      ...prev,
+      profile: {
+        ...prev.profile,
+        kycStatus: user.kycStatus
+      }
+    }));
+  }, [user?.kycStatus]);
 
   useEffect(() => {
     if (!storageKey || isHydrating) {

@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import api from "../api/client";
-import { NEWS_REFRESH_MS } from "../constants/realtime";
+import { startContinuousRefresh } from "../constants/realtime";
 
 const NewsRow = ({ item }) => {
   const openLink = async () => {
@@ -73,11 +73,11 @@ export default function NewsScreen() {
   );
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      loadNews().catch(() => {});
-    }, NEWS_REFRESH_MS);
+    const stop = startContinuousRefresh(async () => {
+      await loadNews();
+    });
 
-    return () => clearInterval(timer);
+    return stop;
   }, [loadNews]);
 
   const onRefresh = async () => {
@@ -109,7 +109,7 @@ export default function NewsScreen() {
       <View style={styles.headerCard}>
         <Text style={styles.title}>Market News</Text>
         <Text style={styles.subtitle}>
-          Tap any headline to open the full article. Auto-refresh every {Math.round(NEWS_REFRESH_MS / 1000)}s.
+          Tap any headline to open the full article. Live continuous refresh is enabled.
         </Text>
       </View>
 

@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 
 export default function ResetPasswordScreen({ navigation, route }) {
@@ -17,6 +18,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
   const [email, setEmail] = useState(initialEmail);
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [loadingVerify, setLoadingVerify] = useState(false);
   const [loadingReset, setLoadingReset] = useState(false);
 
@@ -67,6 +69,9 @@ export default function ResetPasswordScreen({ navigation, route }) {
           placeholder="Email"
           autoCapitalize="none"
           keyboardType="email-address"
+          autoComplete="email"
+          textContentType="emailAddress"
+          accessibilityLabel="Email"
           value={email}
           onChangeText={setEmail}
         />
@@ -75,11 +80,18 @@ export default function ResetPasswordScreen({ navigation, route }) {
           style={styles.input}
           placeholder="OTP"
           keyboardType="number-pad"
+          accessibilityLabel="OTP"
           value={otp}
           onChangeText={setOtp}
         />
 
-        <TouchableOpacity style={styles.secondaryButton} onPress={handleVerifyOtp} disabled={loadingVerify}>
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={handleVerifyOtp}
+          disabled={loadingVerify}
+          accessibilityRole="button"
+          accessibilityLabel="Verify OTP"
+        >
           {loadingVerify ? (
             <ActivityIndicator color="#0f766e" />
           ) : (
@@ -87,15 +99,35 @@ export default function ResetPasswordScreen({ navigation, route }) {
           )}
         </TouchableOpacity>
 
-        <TextInput
-          style={styles.input}
-          placeholder="New Password"
-          secureTextEntry
-          value={newPassword}
-          onChangeText={setNewPassword}
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="New Password"
+            secureTextEntry={!showNewPassword}
+            autoComplete="password-new"
+            textContentType="newPassword"
+            accessibilityLabel="New password"
+            value={newPassword}
+            onChangeText={setNewPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeButton}
+            onPress={() => setShowNewPassword((prev) => !prev)}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={showNewPassword ? "Hide new password" : "Show new password"}
+          >
+            <Ionicons name={showNewPassword ? "eye-off-outline" : "eye-outline"} size={20} color="#64748b" />
+          </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleResetPassword} disabled={loadingReset}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleResetPassword}
+          disabled={loadingReset}
+          accessibilityRole="button"
+          accessibilityLabel="Reset password"
+        >
           {loadingReset ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Reset Password</Text>}
         </TouchableOpacity>
       </View>
@@ -131,6 +163,24 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: "#dbe3ee"
+  },
+  passwordContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    paddingLeft: 14,
+    paddingRight: 10,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#dbe3ee",
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 14
+  },
+  eyeButton: {
+    padding: 4
   },
   button: {
     backgroundColor: "#0f766e",

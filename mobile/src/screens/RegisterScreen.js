@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import BrandLogo from "../components/BrandLogo";
 
@@ -22,6 +23,7 @@ export default function RegisterScreen({ navigation }) {
     phone: "",
     password: ""
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const updateField = (key, value) => {
@@ -65,6 +67,9 @@ export default function RegisterScreen({ navigation }) {
             style={styles.input}
             placeholder="Enter your name"
             placeholderTextColor="#94a3b8"
+            autoComplete="name"
+            textContentType="name"
+            accessibilityLabel="Full name"
             value={form.username}
             onChangeText={(value) => updateField("username", value)}
           />
@@ -76,6 +81,9 @@ export default function RegisterScreen({ navigation }) {
             placeholderTextColor="#94a3b8"
             keyboardType="email-address"
             autoCapitalize="none"
+            autoComplete="email"
+            textContentType="emailAddress"
+            accessibilityLabel="Email address"
             value={form.email}
             onChangeText={(value) => updateField("email", value)}
           />
@@ -86,25 +94,48 @@ export default function RegisterScreen({ navigation }) {
             placeholder="Enter mobile number"
             placeholderTextColor="#94a3b8"
             keyboardType="phone-pad"
+            autoComplete="tel"
+            textContentType="telephoneNumber"
+            accessibilityLabel="Phone number"
             value={form.phone}
             onChangeText={(value) => updateField("phone", value)}
           />
 
           <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Create password"
-            placeholderTextColor="#94a3b8"
-            secureTextEntry
-            value={form.password}
-            onChangeText={(value) => updateField("password", value)}
-          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Create password"
+              placeholderTextColor="#94a3b8"
+              secureTextEntry={!showPassword}
+              autoComplete="password-new"
+              textContentType="newPassword"
+              accessibilityLabel="Password"
+              value={form.password}
+              onChangeText={(value) => updateField("password", value)}
+            />
+            <TouchableOpacity
+              style={styles.eyeButton}
+              onPress={() => setShowPassword((prev) => !prev)}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={showPassword ? "Hide password" : "Show password"}
+            >
+              <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color="#64748b" />
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleRegister}
+            disabled={loading}
+            accessibilityRole="button"
+            accessibilityLabel="Register"
+          >
             {loading ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.buttonText}>Register</Text>}
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+          <TouchableOpacity onPress={() => navigation.navigate("Login")} accessibilityRole="button" accessibilityLabel="Go to login">
             <Text style={styles.link}>Already have an account? Login</Text>
           </TouchableOpacity>
         </View>
@@ -178,6 +209,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#dbe3ee",
     color: "#0f172a"
+  },
+  passwordContainer: {
+    backgroundColor: "#f8fbff",
+    borderRadius: 14,
+    paddingLeft: 14,
+    paddingRight: 10,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#dbe3ee",
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 14,
+    color: "#0f172a"
+  },
+  eyeButton: {
+    padding: 4
   },
   button: {
     backgroundColor: "#1d4ed8",

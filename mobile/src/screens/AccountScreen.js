@@ -15,6 +15,13 @@ export default function AccountScreen() {
   const { profile, riskProfile, selectedPlan, alerts, portfolio } = useAppData();
   const [refreshing, setRefreshing] = useState(false);
 
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to log out?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Logout", style: "destructive", onPress: logout }
+    ]);
+  };
+
   const handleRefresh = async () => {
     try {
       setRefreshing(true);
@@ -48,7 +55,7 @@ export default function AccountScreen() {
         {refreshing ? <ActivityIndicator color="#0f766e" /> : <Text style={styles.refreshText}>Refresh Profile</Text>}
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
     </ScrollView>

@@ -15,6 +15,20 @@ import api from "../api/client";
 import { useAuth } from "../context/AuthContext";
 
 const recommendations = ["BUY", "HOLD", "SELL"];
+const readableDate = (value) => (value ? new Date(value).toLocaleString() : "-");
+const extractErrorMessage = (error, fallback) => {
+  const payload = error?.response?.data;
+  if (typeof payload === "string" && payload.trim()) {
+    return payload.trim();
+  }
+  if (payload?.message) {
+    return payload.message;
+  }
+  if (error?.response?.status === 429) {
+    return "Too many requests. Please wait a minute and try again.";
+  }
+  return error?.message || fallback;
+};
 
 const AdminSuggestionRow = ({ item, onDelete, onToggleActive }) => {
   return (
@@ -42,6 +56,62 @@ const AdminSuggestionRow = ({ item, onDelete, onToggleActive }) => {
   );
 };
 
+const AdminKycRow = ({ item, onReview, reviewingId }) => {
+  const isBusy = reviewingId === item.userId;
+
+  return (
+    <View style={styles.itemCard}>
+      <View style={styles.itemHeader}>
+        <Text style={styles.itemSymbol}>{item.fullName || item.username}</Text>
+        <Text
+          style={[
+            styles.kycStatus,
+            item.status === "Verified"
+              ? styles.kycStatusVerified
+              : item.status === "Rejected"
+                ? styles.kycStatusRejected
+                : item.status === "Submitted"
+                  ? styles.kycStatusSubmitted
+                  : styles.kycStatusInProgress
+          ]}
+        >
+          {item.status}
+        </Text>
+      </View>
+
+      <Text style={styles.itemMeta}>Email: {item.email}</Text>
+      <Text style={styles.itemMeta}>Phone: {item.phone}</Text>
+      <Text style={styles.itemMeta}>PAN: {item.pan || "-"}</Text>
+      <Text style={styles.itemMeta}>DOB: {item.dob || "-"}</Text>
+      <Text style={styles.itemMeta}>Location: {[item.city, item.state].filter(Boolean).join(", ") || "-"}</Text>
+      <Text style={styles.itemMeta}>Last updated: {readableDate(item.updatedAt)}</Text>
+      {item.reviewNote ? <Text style={styles.kycNote}>Admin note: {item.reviewNote}</Text> : null}
+
+      <View style={styles.itemActions}>
+        <TouchableOpacity
+          style={styles.verifyAction}
+          onPress={() => onReview(item, "Verified")}
+          disabled={isBusy}
+          accessibilityRole="button"
+          accessibilityLabel={`Verify KYC for ${item.fullName || item.username}`}
+        >
+          {isBusy ? <ActivityIndicator color="#065f46" size="small" /> : <Text style={styles.verifyActionText}>Verify</Text>}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.deleteAction}
+          onPress={() => onReview(item, "Rejected")}
+          disabled={isBusy}
+          accessibilityRole="button"
+          accessibilityLabel={`Reject KYC for ${item.fullName || item.username}`}
+        >
+          <Text style={styles.deleteActionText}>Reject</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
 export default function AdminSuggestionsScreen() {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
@@ -49,7 +119,11 @@ export default function AdminSuggestionsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [reviewingKycId, setReviewingKycId] = useState(null);
   const [items, setItems] = useState([]);
+  const [kycRequests, setKycRequests] = useState([]);
+  const [sendingBroadcast, setSendingBroadcast] = useState(false);
+  const [lastBroadcast, setLastBroadcast] = useState(null);
 
   const [form, setForm] = useState({
     symbol: "",
@@ -58,14 +132,26 @@ export default function AdminSuggestionsScreen() {
     stopLoss: "",
     note: ""
   });
+  const [broadcastForm, setBroadcastForm] = useState({
+    title: "FactoResearch",
+    body: "Hello, Welcome to FactoResearch..... waiting for the roll Today is holiday"
+  });
 
   const canSubmit = useMemo(() => {
     return form.symbol.trim() && form.note.trim();
   }, [form.symbol, form.note]);
 
-  const loadAdminSuggestions = useCallback(async () => {
-    const { data } = await api.get("/admin/suggestions");
-    setItems(data.suggestions || []);
+  const canSendBroadcast = useMemo(() => {
+    return broadcastForm.body.trim().length > 0;
+  }, [broadcastForm.body]);
+
+  const loadAdminData = useCallback(async () => {
+    const [suggestionsRes, kycRes] = await Promise.all([
+      api.get("/admin/suggestions"),
+      api.get("/admin/kyc")
+    ]);
+    setItems(suggestionsRes?.data?.suggestions || []);
+    setKycRequests(kycRes?.data?.requests || []);
   }, []);
 
   useFocusEffect(
@@ -80,12 +166,16 @@ export default function AdminSuggestionsScreen() {
 
         try {
           setLoading(true);
-          const { data } = await api.get("/admin/suggestions");
+          const [suggestionsRes, kycRes] = await Promise.all([
+            api.get("/admin/suggestions"),
+            api.get("/admin/kyc")
+          ]);
           if (mounted) {
-            setItems(data.suggestions || []);
+            setItems(suggestionsRes?.data?.suggestions || []);
+            setKycRequests(kycRes?.data?.requests || []);
           }
         } catch (error) {
-          const message = error?.response?.data?.message || "Unable to fetch admin suggestions";
+          const message = extractErrorMessage(error, "Unable to fetch admin panel data");
           Alert.alert("Error", message);
         } finally {
           if (mounted) {
@@ -105,9 +195,9 @@ export default function AdminSuggestionsScreen() {
   const onRefresh = async () => {
     try {
       setRefreshing(true);
-      await loadAdminSuggestions();
+      await loadAdminData();
     } catch (error) {
-      const message = error?.response?.data?.message || "Unable to refresh";
+      const message = extractErrorMessage(error, "Unable to refresh");
       Alert.alert("Error", message);
     } finally {
       setRefreshing(false);
@@ -116,6 +206,10 @@ export default function AdminSuggestionsScreen() {
 
   const updateField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const updateBroadcastField = (key, value) => {
+    setBroadcastForm((prev) => ({ ...prev, [key]: value }));
   };
 
   const submitSuggestion = async () => {
@@ -142,9 +236,9 @@ export default function AdminSuggestionsScreen() {
         note: ""
       });
 
-      await loadAdminSuggestions();
+      await loadAdminData();
     } catch (error) {
-      const message = error?.response?.data?.message || "Unable to create suggestion";
+      const message = extractErrorMessage(error, "Unable to create suggestion");
       Alert.alert("Error", message);
     } finally {
       setSubmitting(false);
@@ -154,9 +248,9 @@ export default function AdminSuggestionsScreen() {
   const deleteSuggestion = async (id) => {
     try {
       await api.delete(`/admin/suggestions/${id}`);
-      await loadAdminSuggestions();
+      await loadAdminData();
     } catch (error) {
-      const message = error?.response?.data?.message || "Unable to delete suggestion";
+      const message = extractErrorMessage(error, "Unable to delete suggestion");
       Alert.alert("Error", message);
     }
   };
@@ -166,11 +260,92 @@ export default function AdminSuggestionsScreen() {
       await api.patch(`/admin/suggestions/${item.id}`, {
         active: !item.active
       });
-      await loadAdminSuggestions();
+      await loadAdminData();
     } catch (error) {
-      const message = error?.response?.data?.message || "Unable to update suggestion";
+      const message = extractErrorMessage(error, "Unable to update suggestion");
       Alert.alert("Error", message);
     }
+  };
+
+  const reviewKyc = async (item, nextStatus) => {
+    const actionText = nextStatus === "Verified" ? "verify" : "reject";
+
+    Alert.alert("Confirm Action", `Are you sure you want to ${actionText} KYC for ${item.fullName || item.username}?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: nextStatus,
+        style: nextStatus === "Rejected" ? "destructive" : "default",
+        onPress: async () => {
+          try {
+            setReviewingKycId(item.userId);
+            await api.patch(`/admin/kyc/${item.userId}`, {
+              status: nextStatus
+            });
+            await loadAdminData();
+          } catch (error) {
+            const message = extractErrorMessage(error, `Unable to ${actionText} KYC`);
+            Alert.alert("Error", message);
+          } finally {
+            setReviewingKycId(null);
+          }
+        }
+      }
+    ]);
+  };
+
+  const performBroadcastSend = async () => {
+    try {
+      setSendingBroadcast(true);
+      const nowIso = new Date().toISOString();
+      const payload = {
+        title: broadcastForm.title.trim() || "FactoResearch",
+        body: broadcastForm.body.trim(),
+        data: {
+          type: "admin_broadcast",
+          sentBy: user?.email || "admin",
+          sentAt: nowIso
+        }
+      };
+
+      const { data } = await api.post("/admin/notifications/broadcast", payload);
+      const requestedCount = Number(data?.requestedCount || 0);
+      const deliveredTicketCount = Number(data?.deliveredTicketCount || 0);
+
+      setLastBroadcast({
+        at: nowIso,
+        requestedCount,
+        deliveredTicketCount
+      });
+
+      Alert.alert(
+        "Broadcast Sent",
+        requestedCount
+          ? `Message sent to ${requestedCount} device(s). Expo accepted ${deliveredTicketCount} ticket(s).`
+          : "No registered user devices found yet. Ask users to open app and allow notifications first."
+      );
+    } catch (error) {
+      const message = extractErrorMessage(error, "Unable to send broadcast notification");
+      Alert.alert("Error", message);
+    } finally {
+      setSendingBroadcast(false);
+    }
+  };
+
+  const sendBroadcast = async () => {
+    if (!canSendBroadcast) {
+      Alert.alert("Validation", "Message body is required");
+      return;
+    }
+
+    Alert.alert("Send Broadcast", "Send this message to all users who have enabled notifications?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Send",
+        onPress: () => {
+          performBroadcastSend().catch(() => {});
+        }
+      }
+    ]);
   };
 
   if (!isAdmin) {
@@ -197,6 +372,48 @@ export default function AdminSuggestionsScreen() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <Text style={styles.title}>Admin Suggestions Panel</Text>
+      <Text style={styles.panelSubtext}>Manage stock recommendations and verify incoming KYC submissions from users.</Text>
+
+      <View style={styles.formCard}>
+        <Text style={styles.sectionTitle}>Broadcast Message</Text>
+        <Text style={styles.helperText}>This sends a push notification to all users who opened the app and allowed notifications.</Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Notification Title"
+          value={broadcastForm.title}
+          onChangeText={(value) => updateBroadcastField("title", value)}
+        />
+
+        <TextInput
+          style={[styles.input, styles.textArea]}
+          placeholder="Message body"
+          value={broadcastForm.body}
+          multiline
+          onChangeText={(value) => updateBroadcastField("body", value)}
+        />
+
+        <TouchableOpacity style={styles.broadcastButton} onPress={sendBroadcast} disabled={sendingBroadcast}>
+          {sendingBroadcast ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.submitText}>Send To All Users</Text>}
+        </TouchableOpacity>
+
+        {lastBroadcast ? (
+          <Text style={styles.lastBroadcastText}>
+            Last sent: {readableDate(lastBroadcast.at)} | Requested: {lastBroadcast.requestedCount} | Accepted: {lastBroadcast.deliveredTicketCount}
+          </Text>
+        ) : null}
+      </View>
+
+      <Text style={styles.sectionTitle}>KYC Verification Queue</Text>
+      {kycRequests.length ? (
+        kycRequests.map((item) => (
+          <AdminKycRow key={item.userId} item={item} onReview={reviewKyc} reviewingId={reviewingKycId} />
+        ))
+      ) : (
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyText}>No KYC submissions available yet.</Text>
+        </View>
+      )}
 
       <View style={styles.formCard}>
         <Text style={styles.sectionTitle}>Add Stock Suggestion</Text>
@@ -311,6 +528,16 @@ const styles = StyleSheet.create({
     color: "#0f172a",
     marginBottom: 10
   },
+  panelSubtext: {
+    color: "#334155",
+    marginBottom: 12
+  },
+  helperText: {
+    color: "#475569",
+    marginBottom: 10,
+    lineHeight: 18,
+    fontSize: 12
+  },
   formCard: {
     backgroundColor: "#ffffff",
     borderColor: "#dbe3ee",
@@ -369,9 +596,21 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: "center"
   },
+  broadcastButton: {
+    backgroundColor: "#065f46",
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: "center"
+  },
   submitText: {
     color: "#ffffff",
     fontWeight: "700"
+  },
+  lastBroadcastText: {
+    marginTop: 10,
+    color: "#334155",
+    fontSize: 12,
+    fontWeight: "600"
   },
   itemCard: {
     backgroundColor: "#ffffff",
@@ -395,6 +634,22 @@ const styles = StyleSheet.create({
     color: "#2563eb",
     fontWeight: "800"
   },
+  kycStatus: {
+    fontWeight: "800",
+    fontSize: 12
+  },
+  kycStatusInProgress: {
+    color: "#1d4ed8"
+  },
+  kycStatusSubmitted: {
+    color: "#92400e"
+  },
+  kycStatusVerified: {
+    color: "#065f46"
+  },
+  kycStatusRejected: {
+    color: "#991b1b"
+  },
   itemNote: {
     color: "#334155",
     marginBottom: 8,
@@ -410,12 +665,31 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 6
   },
+  verifyAction: {
+    borderWidth: 1,
+    borderColor: "#86efac",
+    backgroundColor: "#dcfce7",
+    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    minHeight: 44,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  verifyActionText: {
+    color: "#065f46",
+    fontWeight: "700",
+    fontSize: 12
+  },
   secondaryAction: {
     borderWidth: 1,
     borderColor: "#94a3b8",
     borderRadius: 8,
     paddingVertical: 7,
-    paddingHorizontal: 10
+    paddingHorizontal: 10,
+    minHeight: 44,
+    justifyContent: "center",
+    alignItems: "center"
   },
   secondaryActionText: {
     color: "#1e293b",
@@ -428,7 +702,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#fee2e2",
     borderRadius: 8,
     paddingVertical: 7,
-    paddingHorizontal: 10
+    paddingHorizontal: 10,
+    minHeight: 44,
+    justifyContent: "center",
+    alignItems: "center"
   },
   deleteActionText: {
     color: "#991b1b",
@@ -444,5 +721,11 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     color: "#64748b"
+  },
+  kycNote: {
+    marginTop: 4,
+    color: "#7f1d1d",
+    fontSize: 12,
+    fontWeight: "700"
   }
 });

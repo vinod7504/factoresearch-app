@@ -6,14 +6,13 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import api from "../api/client";
-import { AUTO_REFRESH_MS } from "../constants/realtime";
+import { startContinuousRefresh } from "../constants/realtime";
 import { useAppData } from "../context/AppDataContext";
 import { useAuth } from "../context/AuthContext";
 
@@ -124,9 +123,6 @@ const LineAction = ({ icon, label, onPress }) => (
 export default function HomeScreen({ navigation }) {
   const { user } = useAuth();
   const { profile, riskProfile, selectedPlan, alerts, portfolio } = useAppData();
-  const [searchSymbol, setSearchSymbol] = useState("");
-  const [searchResult, setSearchResult] = useState(null);
-  const [searchLoading, setSearchLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -174,34 +170,12 @@ export default function HomeScreen({ navigation }) {
   const onRefresh = async () => {
     try {
       setRefreshing(true);
-      setSearchResult(null);
       await loadDashboard();
     } catch (error) {
       const message = error?.response?.data?.message || "Unable to refresh data";
       Alert.alert("Error", message);
     } finally {
       setRefreshing(false);
-    }
-  };
-
-  const handleSearch = async () => {
-    const symbol = searchSymbol.trim().toUpperCase();
-
-    if (!symbol) {
-      Alert.alert("Validation", "Enter a stock symbol (example: RELIANCE.NS or AAPL)");
-      return;
-    }
-
-    try {
-      setSearchLoading(true);
-      const { data } = await api.get(`/market/quote/${encodeURIComponent(symbol)}`);
-      setSearchResult(data.quote);
-    } catch (error) {
-      setSearchResult(null);
-      const message = error?.response?.data?.message || "Unable to fetch stock quote";
-      Alert.alert("Search Failed", message);
-    } finally {
-      setSearchLoading(false);
     }
   };
 
@@ -226,21 +200,12 @@ export default function HomeScreen({ navigation }) {
   const snapshotByMarket = useMemo(() => splitByMarket(dashboard.stocks || []), [dashboard.stocks]);
 
   useEffect(() => {
-    const searchedSymbol = searchResult?.symbol;
+    const stop = startContinuousRefresh(async () => {
+      await loadDashboard();
+    });
 
-    const timer = setInterval(() => {
-      loadDashboard().catch(() => {});
-
-      if (searchedSymbol) {
-        api
-          .get(`/market/quote/${encodeURIComponent(searchedSymbol)}`)
-          .then(({ data }) => setSearchResult(data.quote))
-          .catch(() => {});
-      }
-    }, AUTO_REFRESH_MS);
-
-    return () => clearInterval(timer);
-  }, [loadDashboard, searchResult?.symbol]);
+    return stop;
+  }, [loadDashboard]);
 
   if (loading) {
     return (
@@ -306,24 +271,6 @@ export default function HomeScreen({ navigation }) {
           <LineAction icon="pulse-outline" label="Risk" onPress={() => navigation.navigate("RiskProfile")} />
           <LineAction icon="newspaper-outline" label="News" onPress={() => navigation.navigate("MarketNews")} />
         </View>
-      </View>
-
-      <View style={styles.searchCard}>
-        <Text style={styles.sectionTitle}>Search Recommendation Detail</Text>
-        <View style={styles.searchRow}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Enter symbol (RELIANCE.NS / AAPL)"
-            placeholderTextColor="#94a3b8"
-            autoCapitalize="characters"
-            value={searchSymbol}
-            onChangeText={setSearchSymbol}
-          />
-          <TouchableOpacity style={styles.searchButton} onPress={handleSearch} disabled={searchLoading}>
-            {searchLoading ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.searchButtonText}>Search</Text>}
-          </TouchableOpacity>
-        </View>
-        {searchResult ? <StockRow item={searchResult} onPress={openStockDetails} /> : null}
       </View>
 
       <View style={styles.card}>
@@ -498,11 +445,6 @@ const styles = StyleSheet.create({
   pulseChipValue: { color: "#0f172a", fontWeight: "800", fontSize: 12, marginTop: 1 },
   lineAction: { flexDirection: "row", alignItems: "center", gap: 5, borderRadius: 999, borderWidth: 1, borderColor: "#bfdbfe", backgroundColor: "#eff6ff", paddingVertical: 7, paddingHorizontal: 11 },
   lineActionText: { color: "#1e3a8a", fontWeight: "700", fontSize: 12 },
-  searchCard: { backgroundColor: "#ffffff", borderRadius: 14, borderWidth: 1, borderColor: "#d5e3ff", padding: 12, marginBottom: 10 },
-  searchRow: { flexDirection: "row", gap: 8, marginBottom: 8 },
-  searchInput: { flex: 1, backgroundColor: "#f8fbff", borderRadius: 10, borderWidth: 1, borderColor: "#d7e4fb", paddingHorizontal: 12, paddingVertical: 11, color: "#0f172a" },
-  searchButton: { backgroundColor: "#1d4ed8", borderRadius: 10, paddingHorizontal: 14, alignItems: "center", justifyContent: "center" },
-  searchButtonText: { color: "#ffffff", fontWeight: "800" },
   card: { backgroundColor: "#ffffff", borderRadius: 14, borderWidth: 1, borderColor: "#d5e3ff", padding: 12, marginBottom: 10 },
   sectionTitle: { fontSize: 17, fontWeight: "800", marginBottom: 8, color: "#0f172a" },
   quoteGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 8 },

@@ -310,17 +310,22 @@ export default function AdminSuggestionsScreen() {
       const { data } = await api.post("/admin/notifications/broadcast", payload);
       const requestedCount = Number(data?.requestedCount || 0);
       const deliveredTicketCount = Number(data?.deliveredTicketCount || 0);
+      const failedTicketCount = Number(data?.failedTicketCount || 0);
+      const firstFailure = Array.isArray(data?.failedTickets) && data.failedTickets.length ? data.failedTickets[0] : null;
 
       setLastBroadcast({
         at: nowIso,
         requestedCount,
-        deliveredTicketCount
+        deliveredTicketCount,
+        failedTicketCount
       });
 
       Alert.alert(
-        "Broadcast Sent",
+        failedTicketCount ? "Broadcast Sent With Warnings" : "Broadcast Sent",
         requestedCount
-          ? `Message sent to ${requestedCount} device(s). Expo accepted ${deliveredTicketCount} ticket(s).`
+          ? failedTicketCount
+            ? `Sent to ${requestedCount} device(s). Expo created ${deliveredTicketCount} ticket(s), ${failedTicketCount} failed. ${firstFailure?.code ? `Code: ${firstFailure.code}. ` : ""}${firstFailure?.message || ""}`
+            : `Message sent to ${requestedCount} device(s). Expo accepted ${deliveredTicketCount} ticket(s).`
           : "No registered user devices found yet. Ask users to open app and allow notifications first."
       );
     } catch (error) {
@@ -399,7 +404,7 @@ export default function AdminSuggestionsScreen() {
 
         {lastBroadcast ? (
           <Text style={styles.lastBroadcastText}>
-            Last sent: {readableDate(lastBroadcast.at)} | Requested: {lastBroadcast.requestedCount} | Accepted: {lastBroadcast.deliveredTicketCount}
+            Last sent: {readableDate(lastBroadcast.at)} | Requested: {lastBroadcast.requestedCount} | Tickets: {lastBroadcast.deliveredTicketCount} | Failed: {lastBroadcast.failedTicketCount || 0}
           </Text>
         ) : null}
       </View>

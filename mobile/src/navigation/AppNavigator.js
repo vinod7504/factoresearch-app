@@ -102,11 +102,14 @@ const PrivateTabs = () => (
       options={({ navigation }) => ({
         title: "Dashboard",
         tabBarLabel: "Dashboard",
-        headerTitle: () => <HeaderBrandSearch navigation={navigation} />,
+        headerTitle: () => <BrandLogo compact />,
         headerTitleAlign: "left",
+        headerRight: () => <HeaderBrandSearch navigation={navigation} showLogo={false} />,
+        headerRightContainerStyle: {
+          paddingRight: 12
+        },
         headerTitleContainerStyle: {
-          left: 12,
-          right: 12
+          left: 12
         }
       })}
     />

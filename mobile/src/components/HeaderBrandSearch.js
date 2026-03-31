@@ -13,7 +13,7 @@ import api from "../api/client";
 import { getCachedQuote } from "../utils/marketCache";
 import BrandLogo from "./BrandLogo";
 
-export default function HeaderBrandSearch({ navigation }) {
+export default function HeaderBrandSearch({ navigation, showLogo = true }) {
   const [symbol, setSymbol] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -46,8 +46,8 @@ export default function HeaderBrandSearch({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <BrandLogo compact />
+    <View style={[styles.container, !showLogo ? styles.searchOnlyContainer : null]}>
+      {showLogo ? <BrandLogo compact /> : null}
       <View style={styles.searchWrap}>
         <TextInput
           style={styles.input}
@@ -73,6 +73,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     gap: 8
+  },
+  searchOnlyContainer: {
+    width: 176,
+    gap: 0
   },
   searchWrap: {
     flex: 1,
